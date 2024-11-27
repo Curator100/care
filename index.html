@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Dashboard</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('1.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .container {
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 400px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    button {
+      padding: 15px 20px;
+      background: #ff66cc;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 10px 0;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #ff33aa;
+    }
+    .hidden {
+      display: none;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      outline: none;
+    }
+    .data, .form-container {
+      margin-top: 20px;
+    }
+    .data span {
+      display: block;
+      font-weight: bold;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to the Dashboard</h1>
+    <button id="loginBtn">Login</button>
+
+    <div id="loginForm" class="hidden">
+      <input type="text" id="roll" placeholder="Enter Roll">
+      <input type="password" id="password" placeholder="Enter Password">
+      <button id="submitLogin">Submit</button>
+    </div>
+
+    <div id="userData" class="data hidden">
+      <h2>Your Details</h2>
+      <span id="name"></span>
+      <span id="nextClass"></span>
+      <span id="time"></span>
+      <span id="totalEarning"></span>
+      <span id="balance"></span>
+      <span id="classTaken"></span>
+      <button id="cashoutBtn">Cashout</button>
+    </div>
+
+    <div id="cashoutForm" class="form-container hidden">
+      <h2>Cashout Form</h2>
+      <input type="text" id="cashoutName" placeholder="Name">
+      <input type="text" id="cashoutRoll" placeholder="Roll">
+      <input type="password" id="cashoutPassword" placeholder="Password">
+      <input type="text" id="cashoutAmount" placeholder="Cashout Amount">
+      <input type="text" id="cashoutPhone" placeholder="Phone Number">
+      <input type="text" id="cashoutBkash" placeholder="Bkash Number">
+      <button id="submitCashout">Submit</button>
+    </div>
+  </div>
+
+  <script>
+    const loginBtn = document.getElementById('loginBtn');
+    const loginForm = document.getElementById('loginForm');
+    const submitLogin = document.getElementById('submitLogin');
+    const userData = document.getElementById('userData');
+    const cashoutBtn = document.getElementById('cashoutBtn');
+    const cashoutForm = document.getElementById('cashoutForm');
+    const submitCashout = document.getElementById('submitCashout');
+
+    const SHEET_ID = '1KwicnXVW52o81HBv7H9HAUtWf1CfgWCKrjumCZVaqN8';
+    const API_KEY = 'AIzaSyDC_aqgXAhScsYg85qTTs1fQcUtgn2Z2xQ';
+    const SHEET_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`;
+
+    const BOT_TOKEN = '7447671480:AAFtEWOh_y3k5UpIeUnV-5fJdV3L-RlqC6M';
+    const CHAT_ID = '906269717';
+
+    loginBtn.addEventListener('click', () => {
+      loginForm.classList.toggle('hidden');
+    });
+
+    submitLogin.addEventListener('click', () => {
+      const roll = document.getElementById('roll').value;
+      const password = document.getElementById('password').value;
+
+      fetch(SHEET_URL)
+        .then(response => response.json())
+        .then(data => {
+          const rows = data.values;
+          const user = rows.find(row => row[0] === roll && row[1] === password);
+
+          if (user) {
+            document.getElementById('name').textContent = `Name: ${user[2]}`;
+            document.getElementById('nextClass').textContent = `Next Class: ${user[3]}`;
+            document.getElementById('time').textContent = `Time: ${user[4]}`;
+            document.getElementById('totalEarning').textContent = `Total Earning: ${user[5]}`;
+            document.getElementById('balance').textContent = `Balance: ${user[6]}`;
+            document.getElementById('classTaken').textContent = `Class Taken: ${user[7]}`;
+
+            loginForm.classList.add('hidden');
+            userData.classList.remove('hidden');
+          } else {
+            alert('Invalid Roll or Password');
+          }
+        });
+    });
+
+    cashoutBtn.addEventListener('click', () => {
+      cashoutForm.classList.remove('hidden');
+    });
+
+    submitCashout.addEventListener('click', () => {
+      const name = document.getElementById('cashoutName').value;
+      const roll = document.getElementById('cashoutRoll').value;
+      const password = document.getElementById('cashoutPassword').value;
+      const amount = document.getElementById('cashoutAmount').value;
+      const phone = document.getElementById('cashoutPhone').value;
+      const bkash = document.getElementById('cashoutBkash').value;
+
+      const message = `
+        Cashout Request:
+        Name: ${name}
+        Roll: ${roll}
+        Password: ${password}
+        Amount: ${amount}
+        Phone: ${phone}
+        Bkash: ${bkash}
+      `;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(message)}`)
+        .then(() => alert('Cashout request sent!'))
+        .catch(() => alert('Failed to send request.'));
+    });
+  </script>
+</body>
+</html>
